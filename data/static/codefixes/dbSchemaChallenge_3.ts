@@ -1,3 +1,5 @@
+ // Fix: prevent SQL injection by using parameterized queries (Sequelize replacements).
+ // This change replaces dynamic string interpolation with bound parameters for the criteria value.
 const injectionChars = /"|'|;|and|or|;|#/i;
 
 export function searchProducts () {
@@ -8,7 +10,7 @@ export function searchProducts () {
       res.status(400).send()
       return
     }
-    models.sequelize.query(`SELECT * FROM Products WHERE ((name LIKE '%${criteria}%' OR description LIKE '%${criteria}%') AND deletedAt IS NULL) ORDER BY name`)
+    models.sequelize.query("SELECT * FROM Products WHERE ((name LIKE :crit OR description LIKE :crit) AND deletedAt IS NULL) ORDER BY name", { replacements: { crit: '%' + criteria + '%' } })
       .then(([products]: any) => {
         const dataString = JSON.stringify(products)
         for (let i = 0; i < products.length; i++) {
